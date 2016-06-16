@@ -15,23 +15,41 @@ int main(int argc, const char *argv[])
 {
 	Game me;
 	game_init(&me, 800, 800, false);
+	printf(
+			"controls:\n"
+			"\tq - quit\n");
 
 	SDL_Point pts[256];
 	for (int i=0; i<256; ++i) {
+		int sample = rand() % 100 + 100;
 		float angle = 2*M_PI*i/256.0;
-		pts[i].x = 100*sin(angle) + 400;
-		pts[i].y = 100*cos(angle) + 400;
+		pts[i].x = sample*sin(angle) + 400;
+		pts[i].y = sample*cos(angle) + 400;
 	}
 
-	SDL_SetRenderDrawColor(me.ren, 255, 0, 255, 255);
-	SDL_RenderDrawPoints(me.ren, pts, 256);
-	SDL_RenderPresent(me.ren);
-	SDL_Delay(3000);
+	while (true) {
+		SDL_Event event;
+		SDL_WaitEvent(&event);
 
+		switch (event.type) {
+		case SDL_KEYDOWN: {
+			SDL_Keysym *key = &event.key.keysym;
+			if (key->sym == SDLK_q) goto finalize_program;
+			break;
+		} default:
+			break;
+		}
+		SDL_SetRenderDrawColor(me.ren, 255, 0, 255, 255);
+		SDL_RenderDrawLines(me.ren, pts, 256);
+		SDL_RenderPresent(me.ren);
+	}
+
+finalize_program:
 	game_fini(&me);
 	return 0;
 }
 
+/*--------------------------------------------------------------------------- */
 void game_init(Game *me, int w, int h, bool fs)
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
