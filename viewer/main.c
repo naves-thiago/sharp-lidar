@@ -12,25 +12,33 @@ void game_fini(Game *me);
 
 static int watch_for_io(void *data);
 static void signal_update_in_dataset();
-static SDL_Point make_dataset_point(float angle_in_deg, float sample);
+static SDL_Point dataset_to_screenspace(float angle_in_deg, float sample);
+
+#define SCALE_MILIMETER_TO_PIXELS (0.5)
 
 #define DATASET_SIZE (sizeof dataset / sizeof *dataset)
-SDL_Point dataset[360];
+SDL_Point screen = { 800, 800 };
+float     dataset    [360];
+SDL_Point screenspace[360];
 
 int main(int argc, const char *argv[])
 {
 	Game me;
-	game_init(&me, 800, 800, false);
+	game_init(&me, screen.x, screen.y, false);
 	printf(
-			"controls:\n"
-			"\tq - quit\n");
+			"controls (on the screen):\n"
+			"\tq - quit\n"
+			"controls (on the terminal / debug mode):\n"
+			"\tangle(deg) value(mm)\n"
+			);
+	printf("> ");
 
 	// TODO: spin a thread to watch for IO
 	SDL_CreateThread(watch_for_io, "IO", 0);
 
 	for (int i=0; i<360; ++i) {
-		int sample = rand() % 100 + 100;
-		dataset[i] = make_dataset_point(i, sample);
+		dataset[i]     = rand() % 100 + 100;
+		screenspace[i] = dataset_to_screenspace(i, dataset[i]);
 	}
 
 	while (true) {
@@ -53,7 +61,7 @@ int main(int argc, const char *argv[])
 		SDL_RenderClear(me.ren);
 
 		SDL_SetRenderDrawColor(me.ren, 255, 0, 255, 255);
-		SDL_RenderDrawLines(me.ren, dataset, DATASET_SIZE);
+		SDL_RenderDrawLines(me.ren, screenspace, DATASET_SIZE);
 		SDL_RenderPresent(me.ren);
 	}
 
@@ -94,11 +102,11 @@ static int watch_for_io(void *data)
 
 		fgets(buf, sizeof buf, stdin);
 		sscanf(buf, " %f %f",  &angle_in_deg,&sample);
+		printf("> ");
 		angle_in_deg = fmod(angle_in_deg, 360);
 
-		printf("echo: %f %f\n", angle_in_deg, sample);
-
-		dataset[(int)angle_in_deg] = make_dataset_point(angle_in_deg, sample);
+		dataset[(int)angle_in_deg]     = sample;
+		screenspace[(int)angle_in_deg] = dataset_to_screenspace(angle_in_deg, sample);
 		signal_update_in_dataset();
 	}
 	return 0;
@@ -120,12 +128,12 @@ static void signal_update_in_dataset()
 	SDL_PushEvent(&event);
 }
 
-static SDL_Point make_dataset_point(float angle_in_deg, float sample)
+static SDL_Point dataset_to_screenspace(float angle_in_deg, float sample)
 {
 	SDL_Point p;
 	float angle_in_rad = 2*M_PI*(angle_in_deg/360);
-	p.x = sample*sin(angle_in_rad) + 400;
-	p.y = sample*cos(angle_in_rad) + 400;
+	p.x = SCALE_MILIMETER_TO_PIXELS*sample*sin(angle_in_rad) + screen.x/2;
+	p.y = SCALE_MILIMETER_TO_PIXELS*sample*cos(angle_in_rad) + screen.y/2;
 
 	return p;
 }
