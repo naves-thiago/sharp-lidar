@@ -1,0 +1,13 @@
+viewer:
+	- handle TTY with baud rate
+	- add command line with port & baud to connect with the lidar
+
+lidar:
+	* mechanics:
+		- find a stepper
+		- fix the sensor to it
+	* electronics:
+		- stepper driver
+	* software:
+		- (find a lib) stepper driver
+		- (find a lib) sensor (2Y0A21 F 04 : http://www.sharpsma.com/webfm_send/1208)
