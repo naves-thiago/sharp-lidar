@@ -20,10 +20,16 @@ static SDL_Point dataset_to_screenspace(float angle_in_deg, float sample);
 SDL_Point screen = { 800, 800 };
 float     dataset    [360];
 SDL_Point screenspace[360];
+int fd;
+
+int tty_open(const char* serialport, int baud);
+int tty_read_until(int fd, char* buf, char until, int buf_max, int timeout);
 
 int main(int argc, const char *argv[])
 {
 	Game me;
+
+	fd = tty_open(argv[1], 9600);
 	game_init(&me, screen.x, screen.y, false);
 	printf(
 			"controls (on the screen):\n"
@@ -100,9 +106,11 @@ static int watch_for_io(void *data)
 		float angle_in_deg;
 		float sample;
 
-		fgets(buf, sizeof buf, stdin);
-		sscanf(buf, " %f %f",  &angle_in_deg,&sample);
-		printf("> ");
+		tty_read_until(fd, buf, '\n', sizeof buf, 100000);
+		//fgets(buf, sizeof buf, stdin);
+		sscanf(buf, " %f %f",  &angle_in_deg, &sample);
+		printf("got %f %f\n> ", angle_in_deg, sample);
+
 		angle_in_deg = fmod(angle_in_deg, 360);
 
 		dataset[(int)angle_in_deg]     = sample;
