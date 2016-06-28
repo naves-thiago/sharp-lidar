@@ -14,7 +14,7 @@ static int watch_for_io(void *data);
 static void signal_update_in_dataset();
 static SDL_Point dataset_to_screenspace(float angle_in_deg, float sample);
 
-#define SCALE_MILIMETER_TO_PIXELS (0.5)
+#define SCALE_MILIMETER_TO_PIXELS (3.5)
 
 #define DATASET_SIZE (sizeof dataset / sizeof *dataset)
 SDL_Point screen = { 800, 800 };

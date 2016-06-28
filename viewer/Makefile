@@ -3,7 +3,7 @@ bin_O=main.o tty.o
 bin_C=${bin_O:.o=.c}
 
 CFLAGS=-march=native -std=gnu99 -O2 -Wall -pedantic -g -I /usr/local/include/
-LDLIBS=-O2 -lm -g -lSDL2 -L /usr/local/include/
+LDLIBS=-O2 -lm -g -lSDL2 -L /usr/local/lib
 
 #PKG=sdl2 glew gl
 #CFLAGS +=`pkg-config $(PKG) --cflags`
